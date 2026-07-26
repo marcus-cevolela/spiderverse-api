@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException
+from app.schemas.spider import Spider
 
 router = APIRouter(prefix="/spiders")
 
-spiders = {
-        1: {
+spiders = [
+        {
             "id": 1,
             "name": "Spider-Man - TOBEY",
             "secretIdentity": "Peter Parker",
@@ -12,7 +13,7 @@ spiders = {
             "banner": "...",
             "slug": "spider-man"
         },
-        2: {
+        {
             "id": 2,
             "name": "Spider-Man - ANDREW",
             "secretIdentity": "Peter Parker",
@@ -21,7 +22,7 @@ spiders = {
             "banner": "...",
             "slug": "spider-man"
         },
-        3: {
+        {
             "id": 3,
             "name": "Spider-Man - TOM",
             "secretIdentity": "Peter Parker",
@@ -30,16 +31,18 @@ spiders = {
             "banner": "...",
             "slug": "spider-man"
         },
-    }
+    ]
 
-@router.get("/")
+@router.get("/", response_model=list[Spider])
 def get_spiders():
     return spiders
 
-@router.get("/{id_spider}")
+@router.get("/{id_spider}", response_model=Spider)
 def get_spider_by_id(id_spider: int):
-    if id_spider not in spiders:
-        raise HTTPException(status_code=404, detail="Spider não encontrado.")
+    for spider in spiders:
+        if spider["id"] == id_spider:
+            return spider
 
-    return spiders[id_spider]
+    raise HTTPException(status_code=404, detail="Spider não encontrado.")
+
 
