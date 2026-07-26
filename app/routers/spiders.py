@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException
-from app.schemas.spider import Spider
+from fastapi import APIRouter, HTTPException, status
+from app.schemas.spider import Spider, SpiderCreate
 
 router = APIRouter(prefix="/spiders")
 
@@ -43,6 +43,14 @@ def get_spider_by_id(id_spider: int):
         if spider["id"] == id_spider:
             return spider
 
-    raise HTTPException(status_code=404, detail="Spider não encontrado.")
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Spider não encontrado.")
+
+@router.post("/", response_model=Spider, status_code=status.HTTP_201_CREATED)
+def create_spider(spider: SpiderCreate):
+    new_id = len(spiders) + 1
+    dados = spider.model_dump()
+    dados["id"] = new_id
+    spiders.append(dados)
+    return dados
 
 
