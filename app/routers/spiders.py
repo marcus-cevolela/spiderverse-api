@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 router = APIRouter(prefix="/spiders")
 
@@ -38,4 +38,8 @@ def get_spiders():
 
 @router.get("/{id_spider}")
 def get_spider_by_id(id_spider: int):
+    if id_spider not in spiders:
+        raise HTTPException(status_code=404, detail="Spider não encontrado.")
+
     return spiders[id_spider]
+
