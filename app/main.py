@@ -21,3 +21,5 @@ def api_info():
         }
 
 app.include_router(router, prefix="/api/v1")
+
+

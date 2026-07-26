@@ -53,4 +53,19 @@ def create_spider(spider: SpiderCreate):
     spiders.append(dados)
     return dados
 
+@router.put("/{id_spider}", response_model=Spider)
+def change_spider_by_id(id_spider: int, changed_spider: SpiderCreate):
+    for indice, spider in enumerate(spiders):
+        if spider["id"] == id_spider:
+            dados = changed_spider.model_dump()
+            dados["id"] = id_spider
+            spiders[indice] = dados
+            return dados
+
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Spider não encontrado.")
+
+
+
+
+
 
