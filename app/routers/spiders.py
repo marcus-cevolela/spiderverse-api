@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Query
 from app.schemas.spider import Spider, SpiderCreate, SpiderUpdate
 
 router = APIRouter(prefix="/spiders")
@@ -6,7 +6,7 @@ router = APIRouter(prefix="/spiders")
 spiders = [
         {
             "id": 1,
-            "name": "Spider Man",
+            "name": "Spider",
             "secretIdentity": "Peter Parker",
             "description": "...",
             "thumbnail": "https://example.com/",
@@ -15,7 +15,7 @@ spiders = [
         },
         {
             "id": 2,
-            "name": "Spider Man",
+            "name": "Spider",
             "secretIdentity": "Peter Parker",
             "description": "...",
             "thumbnail": "https://example.com/",
@@ -34,14 +34,31 @@ spiders = [
     ]
 
 @router.get("/", response_model=list[Spider])
-def get_spiders(name_spider: str | None = None):
-    if name_spider is None:
+def get_spiders(name_spider: str | None = Query(
+    default=None,
+    min_length=3,
+    description="Filtra personagens pelo nome.",
+    example="Spider Man"),
+    slug_spider: str | None =  Query(
+        default=None,
+        min_length=3,
+        description="Filtra personagens pelo slug.",
+        example="tobey-maguire")):
+    
+    if name_spider is None and slug_spider is None:
         return spiders
 
     filtered_spiders = []
     for spider in spiders:
-        if spider["name"].lower() == name_spider.lower():
-            filtered_spiders.append(spider)
+        if name_spider is not None:
+            if spider["name"].lower() != name_spider.lower():
+                continue
+
+        if slug_spider is not None:
+            if spider["slug"].lower() != slug_spider.lower():
+                continue
+
+        filtered_spiders.append(spider)
 
     return filtered_spiders
         
