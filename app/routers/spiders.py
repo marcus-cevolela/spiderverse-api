@@ -6,36 +6,46 @@ router = APIRouter(prefix="/spiders")
 spiders = [
         {
             "id": 1,
-            "name": "Spider-Man - TOBEY",
+            "name": "Spider Man",
             "secretIdentity": "Peter Parker",
             "description": "...",
-            "thumbnail": "...",
-            "banner": "...",
-            "slug": "spider-man"
+            "thumbnail": "https://example.com/",
+            "banner": "https://example.com/",
+            "slug": "tobey-maguire"
         },
         {
             "id": 2,
-            "name": "Spider-Man - ANDREW",
+            "name": "Spider Man",
             "secretIdentity": "Peter Parker",
             "description": "...",
-            "thumbnail": "...",
-            "banner": "...",
-            "slug": "spider-man"
+            "thumbnail": "https://example.com/",
+            "banner": "https://example.com/",
+            "slug": "andrew-garfield"
         },
         {
             "id": 3,
-            "name": "Spider-Man - TOM",
+            "name": "TOM HOLLAND",
             "secretIdentity": "Peter Parker",
             "description": "...",
-            "thumbnail": "...",
-            "banner": "...",
-            "slug": "spider-man"
+            "thumbnail": "https://example.com/",
+            "banner": "https://example.com/",
+            "slug": "tom-holland"
         },
     ]
 
 @router.get("/", response_model=list[Spider])
-def get_spiders():
-    return spiders
+def get_spiders(name_spider: str | None = None):
+    if name_spider is None:
+        return spiders
+
+    filtered_spiders = []
+    for spider in spiders:
+        if spider["name"].lower() == name_spider.lower():
+            filtered_spiders.append(spider)
+
+    return filtered_spiders
+        
+
 
 @router.get("/{id_spider}", response_model=Spider)
 def get_spider_by_id(id_spider: int):
@@ -82,9 +92,3 @@ def update_spider(id_spider: int, updated_spider: SpiderUpdate):
             return spider
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Spider não encontrado.")
-
-            
-
-
-
-
