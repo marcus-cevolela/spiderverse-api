@@ -64,7 +64,15 @@ def change_spider_by_id(id_spider: int, changed_spider: SpiderCreate):
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Spider não encontrado.")
 
+@router.delete("/{id_spider}", status_code=status.HTTP_200_OK)
+def delete_spider(id_spider: int):
+    for indice, spider in enumerate(spiders):
+            if spider["id"] == id_spider:
+                spiders.pop(indice)
+                return {"message": "Spider removido com sucesso."}
 
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Spider não encontrado.")
+            
 
 
 
