@@ -6,7 +6,7 @@ router = APIRouter(prefix="/spiders")
 spiders = [
         {
             "id": 1,
-            "name": "Spider-Man",
+            "name": "cSpider-Man",
             "secretIdentity": "Peter Parker",
             "description": "...",
             "thumbnail": "https://example.com/",
@@ -15,7 +15,7 @@ spiders = [
         },
         {
             "id": 2,
-            "name": "Spider-Man",
+            "name": "aSpider-Man",
             "secretIdentity": "Peter Parker",
             "description": "...",
             "thumbnail": "https://example.com/",
@@ -24,7 +24,7 @@ spiders = [
         },
         {
             "id": 3,
-            "name": "TOM HOLLAND",
+            "name": "bTOM HOLLAND",
             "secretIdentity": "Peter Parker",
             "description": "...",
             "thumbnail": "https://example.com/",
@@ -32,6 +32,8 @@ spiders = [
             "slug": "tom-holland"
         },
     ]
+
+SORT_OPTIONS = ["id", "name", "slug", "secretIdentity"]
 
 @router.get("/", response_model=list[Spider])
 def get_spiders(
@@ -45,6 +47,10 @@ def get_spiders(
         min_length=3,
         description="Filtra personagens pelo slug.",
         example="tobey-maguire"),
+    sort: str | None = Query(
+        default=None,
+        description="Campo utilizado para ordenar os personagens.",
+        example="name"),
     limit: int = Query(
         default=10,
         ge=1,
@@ -54,8 +60,10 @@ def get_spiders(
         default=0,
         ge=0,
         description="Quantidade de personagens a serem ignorados.")):
+
+    reverse = False
     
-    if name_spider is None and slug_spider is None:
+    if name_spider is None and slug_spider is None and sort is None:
         return spiders[offset:offset+limit]
 
     result_spiders = []
@@ -70,8 +78,20 @@ def get_spiders(
 
         result_spiders.append(spider)
 
-    return result_spiders[offset:offset+limit]
+    if sort is not None:
+        if sort.startswith("-"):
+            reverse = True
+            sort = sort[1:]
+
+        if sort not in SORT_OPTIONS:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Campo de ordenação '{sort}' não é permitido.")
         
+        result_spiders = sorted(
+            result_spiders, 
+            key=lambda spider: spider[sort],
+            reverse=reverse)
+
+    return result_spiders[offset:offset+limit]
 
 
 @router.get("/{id_spider}", response_model=Spider)
@@ -119,3 +139,5 @@ def update_spider(id_spider: int, updated_spider: SpiderUpdate):
             return spider
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Spider não encontrado.")
+
+
