@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Query
 from app.schemas.spider import Spider, SpiderCreate, SpiderUpdate
+from app.enums.spider import SpiderSort
 
 router = APIRouter(prefix="/spiders")
 
@@ -33,8 +34,6 @@ spiders = [
         },
     ]
 
-SORT_OPTIONS = ["id", "name", "slug", "secretIdentity"]
-
 @router.get("/", response_model=list[Spider])
 def get_spiders(
     name_spider: str | None = Query(
@@ -47,7 +46,7 @@ def get_spiders(
         min_length=3,
         description="Filtra personagens pelo slug.",
         example="tobey-maguire"),
-    sort: str | None = Query(
+    sort: SpiderSort | None = Query(
         default=None,
         description="Campo utilizado para ordenar os personagens.",
         example="name"),
@@ -79,16 +78,14 @@ def get_spiders(
         result_spiders.append(spider)
 
     if sort is not None:
-        if sort.startswith("-"):
+        sort_key = sort.value
+        if sort_key.startswith("-"):
             reverse = True
-            sort = sort[1:]
-
-        if sort not in SORT_OPTIONS:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Campo de ordenação '{sort}' não é permitido.")
+            sort_key = sort_key[1:]
         
         result_spiders = sorted(
             result_spiders, 
-            key=lambda spider: spider[sort],
+            key=lambda spider: spider[sort_key],
             reverse=reverse)
 
     return result_spiders[offset:offset+limit]
