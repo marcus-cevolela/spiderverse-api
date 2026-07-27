@@ -6,7 +6,7 @@ router = APIRouter(prefix="/spiders")
 spiders = [
         {
             "id": 1,
-            "name": "Spider",
+            "name": "Spider-Man",
             "secretIdentity": "Peter Parker",
             "description": "...",
             "thumbnail": "https://example.com/",
@@ -15,7 +15,7 @@ spiders = [
         },
         {
             "id": 2,
-            "name": "Spider",
+            "name": "Spider-Man",
             "secretIdentity": "Peter Parker",
             "description": "...",
             "thumbnail": "https://example.com/",
@@ -34,21 +34,31 @@ spiders = [
     ]
 
 @router.get("/", response_model=list[Spider])
-def get_spiders(name_spider: str | None = Query(
-    default=None,
-    min_length=3,
-    description="Filtra personagens pelo nome.",
-    example="Spider Man"),
+def get_spiders(
+    name_spider: str | None = Query(
+        default=None,
+        min_length=3,
+        description="Filtra personagens pelo nome.",
+        example="Spider-Man"),
     slug_spider: str | None =  Query(
         default=None,
         min_length=3,
         description="Filtra personagens pelo slug.",
-        example="tobey-maguire")):
+        example="tobey-maguire"),
+    limit: int = Query(
+        default=10,
+        ge=1,
+        le=100,
+        description="Quantidade máxima de personagens retornados."),
+    offset: int = Query(
+        default=0,
+        ge=0,
+        description="Quantidade de personagens a serem ignorados.")):
     
     if name_spider is None and slug_spider is None:
-        return spiders
+        return spiders[offset:offset+limit]
 
-    filtered_spiders = []
+    result_spiders = []
     for spider in spiders:
         if name_spider is not None:
             if spider["name"].lower() != name_spider.lower():
@@ -58,9 +68,9 @@ def get_spiders(name_spider: str | None = Query(
             if spider["slug"].lower() != slug_spider.lower():
                 continue
 
-        filtered_spiders.append(spider)
+        result_spiders.append(spider)
 
-    return filtered_spiders
+    return result_spiders[offset:offset+limit]
         
 
 
