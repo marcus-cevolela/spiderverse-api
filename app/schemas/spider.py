@@ -13,3 +13,11 @@ class SpiderCreate(SpiderBase):
 
 class Spider(SpiderBase):
     id: int
+
+class SpiderUpdate(BaseModel):
+    name: str | None = Field(None, min_length=1)
+    secretIdentity: str | None = Field(None, min_length=1)
+    description: str | None = Field(None, min_length=1)
+    thumbnail: HttpUrl | None = None
+    banner: HttpUrl | None = None
+    slug: str | None = Field(None, min_length=1, pattern="^[a-z0-9-]+$")

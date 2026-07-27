@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from app.schemas.spider import Spider, SpiderCreate
+from app.schemas.spider import Spider, SpiderCreate, SpiderUpdate
 
 router = APIRouter(prefix="/spiders")
 
@@ -72,6 +72,17 @@ def delete_spider(id_spider: int):
                 return {"message": "Spider removido com sucesso."}
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Spider não encontrado.")
+
+@router.patch("/{id_spider}")
+def update_spider(id_spider: int, updated_spider: SpiderUpdate):
+    for spider in spiders:
+        if spider["id"] == id_spider:
+            campos_atualizados = updated_spider.model_dump(exclude_unset=True)
+            spider.update(campos_atualizados)
+            return spider
+
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Spider não encontrado.")
+
             
 
 
