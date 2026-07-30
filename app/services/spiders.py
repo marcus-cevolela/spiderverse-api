@@ -1,53 +1,26 @@
-from app.enums.spider import SpiderSort
-from app.data.spiders import spiders
+
+from sqlalchemy.orm import Session
+from sqlalchemy import select
+# from app.data.spiders import spiders
+from app.models.spider import Spider
 from app.exceptions.spider import SpiderNotFoundError
 from app.schemas.spider import SpiderCreate, SpiderUpdate
 
-def get_spiders(
-    name_spider: str | None = None,
-    slug_spider: str | None = None,
-    sort: SpiderSort | None = None,
-    limit: int = 10,
-    offset: int = 0):
-    
-    reverse = False
-    
-    if name_spider is None and slug_spider is None and sort is None:
-        return spiders[offset:offset+limit]
+def get_spiders(db: Session): 
+    result = db.execute(select(Spider)) 
+    return result.scalars().all()
 
-    result_spiders = []
-    for spider in spiders:
-        if name_spider is not None:
-            if spider["name"].lower() != name_spider.lower():
-                continue
+def get_spider_by_id(db: Session,id_spider: int):
+    result = db.execute(
+        select(Spider).where(Spider.id == id_spider)
+    )
 
-        if slug_spider is not None:
-            if spider["slug"].lower() != slug_spider.lower():
-                continue
+    spider = result.scalars().first()
 
-        result_spiders.append(spider)
+    if spider is None:
+        raise SpiderNotFoundError(id_spider)
 
-    if sort is not None:
-        sort_key = sort.value
-        if sort_key.startswith("-"):
-            reverse = True
-            sort_key = sort_key[1:]
-        
-        result_spiders = sorted(
-            result_spiders, 
-            key=lambda spider: spider[sort_key],
-            reverse=reverse)
-
-    return result_spiders[offset:offset+limit]
-
-def get_spider_by_id(
-    id_spider: int
-):
-    for spider in spiders:
-        if spider["id"] == id_spider:
-            return spider
-
-    raise SpiderNotFoundError(id_spider)
+    return spider
 
 def create_spider(
     spider: SpiderCreate

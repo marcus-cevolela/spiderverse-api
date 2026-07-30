@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field, HttpUrl
 
 class SpiderBase(BaseModel):
     name: str = Field(min_length=1)
-    secretIdentity: str = Field(min_length=1)
+    secret_identity: str = Field(min_length=1)
     description: str = Field(min_length=1)
     thumbnail: HttpUrl
     banner: HttpUrl
@@ -16,7 +16,7 @@ class Spider(SpiderBase):
 
 class SpiderUpdate(BaseModel):
     name: str | None = Field(None, min_length=1)
-    secretIdentity: str | None = Field(None, min_length=1)
+    secret_identity: str | None = Field(None, min_length=1)
     description: str | None = Field(None, min_length=1)
     thumbnail: HttpUrl | None = None
     banner: HttpUrl | None = None

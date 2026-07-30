@@ -1,49 +1,20 @@
-from fastapi import APIRouter, HTTPException, status, Query
+from fastapi import APIRouter, HTTPException, status, Depends
 from app.schemas.spider import Spider, SpiderCreate, SpiderUpdate
-from app.enums.spider import SpiderSort
 from app.services import spiders as spider_service
 from app.exceptions.spider import SpiderNotFoundError
+from sqlalchemy.orm import Session
+from app.database.connection import get_db
 
 router = APIRouter(prefix="/spiders")
 
 @router.get("/", response_model=list[Spider])
-def get_spiders(
-    name_spider: str | None = Query(
-        default=None,
-        min_length=3,
-        description="Filtra personagens pelo nome.",
-        example="Spider-Man"),
-    slug_spider: str | None =  Query(
-        default=None,
-        min_length=3,
-        description="Filtra personagens pelo slug.",
-        example="tobey-maguire"),
-    sort: SpiderSort | None = Query(
-        default=None,
-        description="Campo utilizado para ordenar os personagens.",
-        example="name"),
-    limit: int = Query(
-        default=10,
-        ge=1,
-        le=100,
-        description="Quantidade máxima de personagens retornados."),
-    offset: int = Query(
-        default=0,
-        ge=0,
-        description="Quantidade de personagens a serem ignorados.")
-):
-    return spider_service.get_spiders(
-        name_spider=name_spider,
-        slug_spider=slug_spider,
-        sort=sort,
-        limit=limit,
-        offset=offset,
-    )
+def get_spiders(db: Session = Depends(get_db)):
+    return spider_service.get_spiders(db)
 
 @router.get("/{id_spider}", response_model=Spider)
-def get_spider_by_id(id_spider: int):
+def get_spider_by_id(id_spider: int, db: Session = Depends(get_db)):
     try:
-        return spider_service.get_spider_by_id(id_spider)
+        return spider_service.get_spider_by_id(db, id_spider)
     except SpiderNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
