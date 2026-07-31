@@ -34,8 +34,14 @@ def get_spider_by_id(id_spider: int, db: Session = Depends(get_db)):
         )
 
 @router.post("/", response_model=Spider, status_code=status.HTTP_201_CREATED)
-def create_spider(spider: SpiderCreate):
-    return spider_service.create_spider(spider)
+def create_spider(
+    spider: SpiderCreate,
+    db: Session = Depends(get_db),
+):
+    return spider_service.create_spider(
+        db=db,
+        spider=spider
+    )
 
 @router.put("/{id_spider}", response_model=Spider)
 def change_spider_by_id(id_spider: int, changed_spider: SpiderCreate):

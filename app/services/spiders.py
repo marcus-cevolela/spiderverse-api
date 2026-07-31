@@ -2,7 +2,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 # from app.data.spiders import spiders
-from app.models.spider import Spider
+from app.models.spider import Spider as SpiderModel
 from app.exceptions.spider import SpiderNotFoundError
 from app.schemas.spider import SpiderCreate, SpiderUpdate
 
@@ -14,7 +14,7 @@ def get_spiders(
         offset: int = 0
 ): 
     
-    consulta = select(Spider)
+    consulta = select(SpiderModel)
 
     if name_spider is not None:
         consulta = consulta.where(Spider.name == name_spider)
@@ -29,7 +29,7 @@ def get_spiders(
 
 def get_spider_by_id(db: Session,id_spider: int):
     result = db.execute(
-        select(Spider).where(Spider.id == id_spider)
+        select(SpiderModel).where(SpiderModel.id == id_spider)
     )
 
     spider = result.scalars().first()
@@ -40,13 +40,14 @@ def get_spider_by_id(db: Session,id_spider: int):
     return spider
 
 def create_spider(
+    db: Session,
     spider: SpiderCreate
 ):
-    new_id = len(spiders) + 1
-    dados = spider.model_dump()
-    dados["id"] = new_id
-    spiders.append(dados)
-    return dados
+    novo_spider = SpiderModel(**spider.model_dump(mode="json"))
+    db.add(novo_spider)
+    db.commit()
+    db.refresh(novo_spider)
+    return novo_spider
 
 def change_spider_by_id(
     id_spider: int, 
