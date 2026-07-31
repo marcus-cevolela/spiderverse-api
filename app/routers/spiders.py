@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Query
 from app.schemas.spider import Spider, SpiderCreate, SpiderUpdate
 from app.services import spiders as spider_service
 from app.exceptions.spider import SpiderNotFoundError
@@ -12,11 +12,15 @@ def get_spiders(
     name_spider: str | None = None,
     slug_spider: str | None = None,
     db: Session = Depends(get_db),
+    limit: int = Query(default=10, gt=0),
+    offset: int = Query(default=0, ge=0)
     ):
     return spider_service.get_spiders(
         db=db,
         name_spider=name_spider,
         slug_spider=slug_spider,
+        limit=limit,
+        offset=offset
     )
 
 @router.get("/{id_spider}", response_model=Spider)

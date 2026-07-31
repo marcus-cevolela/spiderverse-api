@@ -9,7 +9,9 @@ from app.schemas.spider import SpiderCreate, SpiderUpdate
 def get_spiders(
         db: Session, 
         name_spider: str | None = None,
-        slug_spider: str | None= None
+        slug_spider: str | None= None,
+        limit: int = 10,
+        offset: int = 0
 ): 
     
     consulta = select(Spider)
@@ -19,6 +21,8 @@ def get_spiders(
 
     if slug_spider is not None:
             consulta = consulta.where(Spider.slug == slug_spider)
+
+    consulta = consulta.limit(limit).offset(offset)
 
     result = db.execute(consulta) 
     return result.scalars().all()
