@@ -8,8 +8,16 @@ from app.database.connection import get_db
 router = APIRouter(prefix="/spiders")
 
 @router.get("/", response_model=list[Spider])
-def get_spiders(db: Session = Depends(get_db)):
-    return spider_service.get_spiders(db)
+def get_spiders(
+    name_spider: str | None = None,
+    slug_spider: str | None = None,
+    db: Session = Depends(get_db),
+    ):
+    return spider_service.get_spiders(
+        db=db,
+        name_spider=name_spider,
+        slug_spider=slug_spider,
+    )
 
 @router.get("/{id_spider}", response_model=Spider)
 def get_spider_by_id(id_spider: int, db: Session = Depends(get_db)):

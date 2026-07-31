@@ -6,8 +6,21 @@ from app.models.spider import Spider
 from app.exceptions.spider import SpiderNotFoundError
 from app.schemas.spider import SpiderCreate, SpiderUpdate
 
-def get_spiders(db: Session): 
-    result = db.execute(select(Spider)) 
+def get_spiders(
+        db: Session, 
+        name_spider: str | None = None,
+        slug_spider: str | None= None
+): 
+    
+    consulta = select(Spider)
+
+    if name_spider is not None:
+        consulta = consulta.where(Spider.name == name_spider)
+
+    if slug_spider is not None:
+            consulta = consulta.where(Spider.slug == slug_spider)
+
+    result = db.execute(consulta) 
     return result.scalars().all()
 
 def get_spider_by_id(db: Session,id_spider: int):
