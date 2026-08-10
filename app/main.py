@@ -7,6 +7,9 @@ from fastapi import FastAPI
 from app.database.base import Base
 from app.database.connection import engine
 import app.models.spider
+import app.models.movie
+import app.models.costume
+import app.models.spider_movie
 
 API_TITLE = "SpiderVerse API"
 API_DESCRIPTION = '''🇧🇷 API REST sobre o universo do Homem-Aranha.
