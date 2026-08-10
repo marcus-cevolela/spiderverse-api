@@ -17,11 +17,12 @@ def get_spiders(
     consulta = select(SpiderModel)
 
     if name_spider is not None:
-        consulta = consulta.where(Spider.name == name_spider)
+        consulta = consulta.where(SpiderModel.name == name_spider)
 
     if slug_spider is not None:
-            consulta = consulta.where(Spider.slug == slug_spider)
+        consulta = consulta.where(SpiderModel.slug == slug_spider)
 
+    consulta = consulta.order_by(SpiderModel.id)
     consulta = consulta.limit(limit).offset(offset)
 
     result = db.execute(consulta) 
