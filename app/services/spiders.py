@@ -57,7 +57,6 @@ def change_spider_by_id(
 ):
     spider = get_spider_by_id(db, id_spider)
 
-
     dados = changed_spider.model_dump(mode="json")
 
     for chave, valor in dados.items():
@@ -70,14 +69,17 @@ def change_spider_by_id(
 
 
 def delete_spider(
-    id_spider: int
+    db: Session,
+    id_spider: int,
 ):
-    for indice, spider in enumerate(spiders):
-        if spider["id"] == id_spider:
-            spiders.pop(indice)
-            return {"message": "Spider removido com sucesso."}
+    spider = get_spider_by_id(db, id_spider)
 
-    raise SpiderNotFoundError(id_spider)
+    db.delete(spider)
+    db.commit()
+
+    return {
+        "message": "Spider removido com sucesso."
+    }
 
 def update_spider(
         db: Session,

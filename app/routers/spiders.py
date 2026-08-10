@@ -65,9 +65,15 @@ def change_spider_by_id(
     )
 
 @router.delete("/{id_spider}", status_code=status.HTTP_200_OK)
-def delete_spider(id_spider: int):
+def delete_spider(
+    id_spider: int,
+    db: Session = Depends(get_db)
+):
     try:
-        return spider_service.delete_spider(id_spider)
+        return spider_service.delete_spider(
+            db=db,
+            id_spider=id_spider
+        )
     except SpiderNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
