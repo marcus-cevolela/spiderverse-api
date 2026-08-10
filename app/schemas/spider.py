@@ -5,6 +5,7 @@ class SpiderBase(BaseModel):
     secret_identity: str = Field(min_length=1)
     description: str = Field(min_length=1)
     thumbnail: HttpUrl
+    thumbnail_hover: HttpUrl
     banner: HttpUrl
     slug: str = Field(min_length=1, pattern="^[a-z0-9-]+$")
 
@@ -19,5 +20,6 @@ class SpiderUpdate(BaseModel):
     secret_identity: str | None = Field(None, min_length=1)
     description: str | None = Field(None, min_length=1)
     thumbnail: HttpUrl | None = None
+    thumbnail_hover: HttpUrl | None = None
     banner: HttpUrl | None = None
     slug: str | None = Field(None, min_length=1, pattern="^[a-z0-9-]+$")
