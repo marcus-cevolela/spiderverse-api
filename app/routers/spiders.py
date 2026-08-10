@@ -24,7 +24,10 @@ def get_spiders(
     )
 
 @router.get("/{id_spider}", response_model=Spider)
-def get_spider_by_id(id_spider: int, db: Session = Depends(get_db)):
+def get_spider_by_id(
+    id_spider: int, 
+    db: Session = Depends(get_db)
+):
     try:
         return spider_service.get_spider_by_id(db, id_spider)
     except SpiderNotFoundError as e:
@@ -44,9 +47,17 @@ def create_spider(
     )
 
 @router.put("/{id_spider}", response_model=Spider)
-def change_spider_by_id(id_spider: int, changed_spider: SpiderCreate):
+def change_spider_by_id(
+    id_spider: int, 
+    changed_spider: SpiderCreate,
+    db: Session = Depends(get_db)
+):
     try:
-        return spider_service.change_spider_by_id(id_spider, changed_spider)
+        return spider_service.change_spider_by_id(
+            db=db,
+            id_spider=id_spider,
+            changed_spider=changed_spider
+        )
     except SpiderNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -50,17 +50,23 @@ def create_spider(
     return novo_spider
 
 def change_spider_by_id(
-    id_spider: int, 
-    changed_spider: SpiderCreate
+        db: Session,
+        id_spider: int,
+        changed_spider: SpiderCreate
 ):
-    for indice, spider in enumerate(spiders):
-        if spider["id"] == id_spider:
-            dados = changed_spider.model_dump()
-            dados["id"] = id_spider
-            spiders[indice] = dados
-            return dados
+    spider = get_spider_by_id(db, id_spider)
 
-    raise SpiderNotFoundError(id_spider)
+
+    dados = changed_spider.model_dump(mode="json")
+
+    for chave, valor in dados.items():
+        setattr(spider, chave, valor)
+
+    db.commit()
+    db.refresh(spider)
+    
+    return spider
+
 
 def delete_spider(
     id_spider: int
