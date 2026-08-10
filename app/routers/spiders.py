@@ -74,10 +74,18 @@ def delete_spider(id_spider: int):
             detail=str(e)
         )
 
-@router.patch("/{id_spider}")
-def update_spider(id_spider: int, updated_spider: SpiderUpdate):
+@router.patch("/{id_spider}", response_model=Spider)
+def update_spider(
+    id_spider: int, 
+    updated_spider: SpiderUpdate,
+    db: Session = Depends(get_db)
+):
     try:
-        return spider_service.update_spider(id_spider, updated_spider)
+        return spider_service.update_spider(
+            db=db,
+            id_spider=id_spider,
+            updated_spider=updated_spider
+        )
     except SpiderNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

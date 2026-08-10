@@ -79,11 +79,19 @@ def delete_spider(
 
     raise SpiderNotFoundError(id_spider)
 
-def update_spider(id_spider: int, updated_spider: SpiderUpdate):
-    for spider in spiders:
-        if spider["id"] == id_spider:
-            campos_atualizados = updated_spider.model_dump(exclude_unset=True)
-            spider.update(campos_atualizados)
-            return spider
+def update_spider(
+        db: Session,
+        id_spider: int,
+        updated_spider: SpiderUpdate
+):
+    spider = get_spider_by_id(db, id_spider)
 
-    raise SpiderNotFoundError(id_spider)
+    dados = updated_spider.model_dump(mode="json", exclude_unset=True)
+
+    for chave, valor in dados.items():
+        setattr(spider, chave, valor)
+
+    db.commit()
+    db.refresh(spider)
+            
+    return spider
