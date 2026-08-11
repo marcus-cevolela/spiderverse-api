@@ -28,7 +28,10 @@ def get_spiders(
     result = db.execute(consulta) 
     return result.scalars().all()
 
-def get_spider_by_id(db: Session,id_spider: int):
+def get_spider_by_id(
+    db: Session,
+    id_spider: int
+):
     result = db.execute(
         select(SpiderModel).where(SpiderModel.id == id_spider)
     )
@@ -66,7 +69,6 @@ def change_spider_by_id(
     db.refresh(spider)
     
     return spider
-
 
 def delete_spider(
     db: Session,
