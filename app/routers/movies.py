@@ -13,7 +13,7 @@ def get_movies(
     db: Session = Depends(get_db),
     limit: int = Query(default=10, gt=0),
     offset: int = Query(default=0, ge=0)
-    ):
+):
     return movie_service.get_movies(
         db=db,
         title_movie=title_movie,

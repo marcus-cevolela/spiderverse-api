@@ -1,5 +1,6 @@
 from app.routers.spiders import router as spider_router
 from app.routers.movies import router as movie_router
+from app.routers.costumes import router as costume_router
 
 from contextlib import asynccontextmanager
 
@@ -38,5 +39,5 @@ def api_info():
         }
 
 app.include_router(spider_router, prefix="/api/v1")
-
 app.include_router(movie_router, prefix="/api/v1")
+app.include_router(costume_router, prefix="/api/v1")
