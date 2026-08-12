@@ -5,7 +5,10 @@ from app.exceptions.costume import CostumeNotFoundError
 from sqlalchemy.orm import Session
 from app.database.connection import get_db
 
-router = APIRouter(prefix="/costumes")
+router = APIRouter(
+    prefix="/costumes",
+    tags=["Costumes"]
+)
 
 @router.get("/", response_model=list[Costume])
 def get_costumes(

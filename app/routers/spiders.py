@@ -5,7 +5,10 @@ from app.exceptions.spider import SpiderNotFoundError
 from sqlalchemy.orm import Session
 from app.database.connection import get_db
 
-router = APIRouter(prefix="/spiders")
+router = APIRouter(
+    prefix="/spiders",
+    tags=["Spiders"]
+)
 
 @router.get("/", response_model=list[Spider])
 def get_spiders(

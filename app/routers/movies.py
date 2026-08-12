@@ -5,7 +5,10 @@ from app.exceptions.movie import MovieNotFoundError
 from sqlalchemy.orm import Session
 from app.database.connection import get_db
 
-router = APIRouter(prefix="/movies")
+router = APIRouter(
+    prefix="/movies",
+    tags=["Movies"]
+)
 
 @router.get("/", response_model=list[Movie])
 def get_movies(
