@@ -1,10 +1,13 @@
-
 from sqlalchemy.orm import Session
-from sqlalchemy import select
-# from app.data.spiders import spiders
+from sqlalchemy import select, and_, insert
 from app.models.spider import Spider as SpiderModel
+from app.models.movie import Movie as MovieModel
+from app.models.spider_movie import spider_movie as SpiderMovieModel
 from app.exceptions.spider import SpiderNotFoundError
+from app.exceptions.movie import MovieNotFoundError
+from app.exceptions.spider_movie import ExistentRelationshipError
 from app.schemas.spider import SpiderCreate, SpiderUpdate
+
 
 def get_spiders(
         db: Session, 
@@ -99,3 +102,40 @@ def update_spider(
     db.refresh(spider)
             
     return spider
+
+def add_movie_to_spider(
+    db: Session,
+    spider_id: int,
+    movie_id: int
+):
+
+    result_spider = db.execute(select(SpiderModel).where(SpiderModel.id == spider_id))
+    result_movie = db.execute(select(MovieModel).where(MovieModel.id == movie_id))
+
+    spider = result_spider.scalars().first()
+    movie = result_movie.scalars().first()
+
+    if spider is None:
+        raise SpiderNotFoundError(spider_id)
+
+    if movie is None:
+        raise MovieNotFoundError(movie_id)
+
+    consulta = select(SpiderMovieModel).where(and_(SpiderMovieModel.c.spider_id == spider_id, SpiderMovieModel.c.movie_id == movie_id))
+    result = db.execute(consulta)
+    relacao = result.first()
+
+    if relacao is not None:
+        raise ExistentRelationshipError(spider_id, movie_id)
+
+    consulta_insert = insert(SpiderMovieModel).values(
+    spider_id=spider_id,
+    movie_id=movie_id
+)
+
+    db.execute(consulta_insert)
+    db.commit()
+
+    return {
+        "message": "Filme associado ao Spider com sucesso."
+    }

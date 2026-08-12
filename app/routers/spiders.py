@@ -2,6 +2,8 @@ from fastapi import APIRouter, HTTPException, status, Depends, Query
 from app.schemas.spider import Spider, SpiderCreate, SpiderUpdate
 from app.services import spiders as spider_service
 from app.exceptions.spider import SpiderNotFoundError
+from app.exceptions.movie import MovieNotFoundError
+from app.exceptions.spider_movie import ExistentRelationshipError
 from sqlalchemy.orm import Session
 from app.database.connection import get_db
 
@@ -101,4 +103,31 @@ def update_spider(
             detail=str(e)
     )
 
+@router.post("/{spider_id}/movies/{movie_id}",status_code=status.HTTP_201_CREATED)
+def add_movie_to_spider(
+    spider_id: int,
+    movie_id: int,
+    db: Session = Depends(get_db)
+):
+    try:
+        return spider_service.add_movie_to_spider(
+            db=db,
+            spider_id=spider_id,
+            movie_id=movie_id
+        )
+    except SpiderNotFoundError as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(e)
+        )
+    except MovieNotFoundError as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(e)
+        )
+    except ExistentRelationshipError as e:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=str(e)
+        )
 
