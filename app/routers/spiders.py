@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from app.schemas.spider import Spider, SpiderCreate, SpiderUpdate
+from app.schemas.movie import Movie
 from app.services import spiders as spider_service
 from app.exceptions.spider import SpiderNotFoundError
 from app.exceptions.movie import MovieNotFoundError
@@ -131,3 +132,18 @@ def add_movie_to_spider(
                 detail=str(e)
         )
 
+@router.get("/{spider_id}/movies", response_model=list[Movie])
+def get_movies_by_spider(
+    spider_id: int,
+    db: Session = Depends(get_db)
+):
+    try:
+        return spider_service.get_movies_by_spider(
+            db=db,
+            spider_id=spider_id,
+        )
+    except SpiderNotFoundError as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(e)
+        )

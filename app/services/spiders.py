@@ -139,3 +139,21 @@ def add_movie_to_spider(
     return {
         "message": "Filme associado ao Spider com sucesso."
     }
+
+def get_movies_by_spider(
+    db: Session,
+    spider_id: int
+):
+    get_spider_by_id(db, spider_id)
+
+    result = db.execute(select(SpiderMovieModel.c.movie_id).where(SpiderMovieModel.c.spider_id == spider_id))
+
+    movie_ids = result.scalars().all()
+
+    movies = []
+    for movie_id in movie_ids:
+        result_movie = db.execute(select(MovieModel).where(MovieModel.id == movie_id))
+        movie = result_movie.scalars().first()
+        movies.append(movie)
+
+    return movies
