@@ -1,11 +1,10 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select, and_, insert, delete
 from app.models.spider import Spider as SpiderModel
-from app.models.movie import Movie as MovieModel
 from app.models.spider_movie import spider_movie as SpiderMovieModel
+from app.models.spider_costume import spider_costume as SpiderCostumeModel
 from app.exceptions.spider import SpiderNotFoundError
-from app.exceptions.movie import MovieNotFoundError
-from app.exceptions.spider_movie import ExistentRelationshipError, NonExistentRelationshipError
+from app.exceptions.relationship import ExistentRelationshipError, NonExistentRelationshipError
 from app.schemas.spider import SpiderCreate, SpiderUpdate
 
 
@@ -108,18 +107,10 @@ def add_movie_to_spider(
     spider_id: int,
     movie_id: int
 ):
+    from app.services.movies import get_movie_by_id
 
-    result_spider = db.execute(select(SpiderModel).where(SpiderModel.id == spider_id))
-    result_movie = db.execute(select(MovieModel).where(MovieModel.id == movie_id))
-
-    spider = result_spider.scalars().first()
-    movie = result_movie.scalars().first()
-
-    if spider is None:
-        raise SpiderNotFoundError(spider_id)
-
-    if movie is None:
-        raise MovieNotFoundError(movie_id)
+    get_spider_by_id(db, spider_id)
+    get_movie_by_id(db, movie_id)
 
     consulta = select(SpiderMovieModel).where(and_(SpiderMovieModel.c.spider_id == spider_id, SpiderMovieModel.c.movie_id == movie_id))
     result = db.execute(consulta)
@@ -144,6 +135,8 @@ def get_movies_by_spider(
     db: Session,
     spider_id: int
 ):
+    from app.services.movies import get_movie_by_id
+
     get_spider_by_id(db, spider_id)
 
     result = db.execute(select(SpiderMovieModel.c.movie_id).where(SpiderMovieModel.c.spider_id == spider_id))
@@ -152,8 +145,7 @@ def get_movies_by_spider(
 
     movies = []
     for movie_id in movie_ids:
-        result_movie = db.execute(select(MovieModel).where(MovieModel.id == movie_id))
-        movie = result_movie.scalars().first()
+        movie = get_movie_by_id(db, movie_id)
         movies.append(movie)
 
     return movies
@@ -163,18 +155,10 @@ def remove_movie_from_spider(
     spider_id: int,
     movie_id: int
 ):
+    from app.services.movies import get_movie_by_id
 
-    result_spider = db.execute(select(SpiderModel).where(SpiderModel.id == spider_id))
-    result_movie = db.execute(select(MovieModel).where(MovieModel.id == movie_id))
-
-    spider = result_spider.scalars().first()
-    movie = result_movie.scalars().first()
-
-    if spider is None:
-        raise SpiderNotFoundError(spider_id)
-
-    if movie is None:
-        raise MovieNotFoundError(movie_id)
+    get_spider_by_id(db, spider_id)
+    get_movie_by_id(db, movie_id)
 
     consulta = select(SpiderMovieModel).where(and_(SpiderMovieModel.c.spider_id == spider_id, SpiderMovieModel.c.movie_id == movie_id))
 
@@ -185,6 +169,81 @@ def remove_movie_from_spider(
         raise NonExistentRelationshipError(spider_id, movie_id)
 
     consulta_delete = delete(SpiderMovieModel).where(and_(SpiderMovieModel.c.spider_id == spider_id, SpiderMovieModel.c.movie_id == movie_id))
+
+    db.execute(consulta_delete)
+    db.commit()
+
+    return {
+        "message": "Relação removida com sucesso."
+    }
+
+def add_costume_to_spider(
+    db: Session,
+    spider_id: int,
+    costume_id: int
+):
+    from app.services.costumes import get_costume_by_id
+
+    get_spider_by_id(db, spider_id)
+    costume = get_costume_by_id(db, costume_id)
+
+    consulta = select(SpiderCostumeModel).where(and_(SpiderCostumeModel.c.spider_id == spider_id, SpiderCostumeModel.c.costume_id == costume_id))
+    result = db.execute(consulta)
+    relacao = result.first()
+    
+    if relacao is not None:
+        raise ExistentRelationshipError(spider_id, costume_id)
+    
+    consulta_insert = insert(SpiderCostumeModel).values(
+    spider_id=spider_id,
+    costume_id=costume_id
+)
+    
+    db.execute(consulta_insert)
+    db.commit()
+    
+    return {
+        "message": f"Traje {costume.name} associado ao Spider {spider_id} com sucesso."
+    }
+
+def get_costumes_by_spider(
+    db: Session,
+    spider_id: int
+):
+    from app.services.costumes import get_costume_by_id
+
+    get_spider_by_id(db, spider_id)
+
+    result = db.execute(select(SpiderCostumeModel.c.costume_id).where(SpiderCostumeModel.c.spider_id == spider_id))
+
+    costume_ids = result.scalars().all()
+
+    costumes = []
+    for costume_id in costume_ids:
+        costume = get_costume_by_id(db, costume_id)
+        costumes.append(costume)
+
+    return costumes
+
+def remove_costume_from_spider(
+    db: Session,
+    spider_id: int,
+    costume_id: int
+):
+    from app.services.costumes import get_costume_by_id
+
+    get_spider_by_id(db, spider_id)
+    get_costume_by_id(db, costume_id)
+
+    consulta = select(SpiderCostumeModel).where(and_(SpiderCostumeModel.c.spider_id == spider_id, SpiderCostumeModel.c.costume_id == costume_id))
+
+    result = db.execute(consulta)
+    relacao = result.first()
+
+    if relacao is None:
+        raise NonExistentRelationshipError(spider_id, costume_id)
+
+    consulta_delete = delete(SpiderCostumeModel).where(and_(SpiderCostumeModel.c.spider_id == spider_id, SpiderCostumeModel.c.costume_id == costume_id))
 
     db.execute(consulta_delete)
     db.commit()

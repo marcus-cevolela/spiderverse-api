@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from app.schemas.costume import Costume, CostumeCreate, CostumeUpdate
+from app.schemas.spider import Spider
 from app.services import costumes as costume_service
 from app.exceptions.costume import CostumeNotFoundError
 from sqlalchemy.orm import Session
@@ -97,4 +98,20 @@ def update_costume(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e)
+        )
+
+@router.get("/{costume_id}/spiders", response_model=list[Spider])
+def get_spiders_by_costume(
+    costume_id: int,
+    db: Session = Depends(get_db)
+):
+    try:
+        return costume_service.get_spiders_by_costume(
+            db=db,
+            costume_id=costume_id,
+        )
+    except CostumeNotFoundError as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(e)
         )

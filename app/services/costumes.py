@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-# from app.data.spiders import spiders
 from app.models.costume import Costume as CostumeModel
+from app.models.spider_costume import spider_costume as SpiderCostumeModel
 from app.exceptions.costume import CostumeNotFoundError
 from app.schemas.costume import CostumeCreate, CostumeUpdate
 
@@ -94,3 +94,22 @@ def update_costume(
     db.refresh(costume)
             
     return costume
+
+def get_spiders_by_costume(
+    db: Session,
+    costume_id: int
+):
+    from app.services.spiders import get_spider_by_id
+    
+    get_costume_by_id(db, costume_id)
+    
+    result = db.execute(select(SpiderCostumeModel.c.spider_id).where(SpiderCostumeModel.c.costume_id == costume_id))
+    
+    spider_ids = result.scalars().all()
+    
+    spiders = []
+    for spider_id in spider_ids:
+        spider = get_spider_by_id(db, spider_id)
+        spiders.append(spider)
+    
+    return spiders

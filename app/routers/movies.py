@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from app.schemas.movie import Movie, MovieCreate, MovieUpdate
 from app.schemas.spider import Spider
+from app.schemas.costume import Costume
 from app.services import movies as movie_service
 from app.exceptions.movie import MovieNotFoundError
 from sqlalchemy.orm import Session
@@ -107,6 +108,22 @@ def get_spiders_by_movie(
 ):
     try:
         return movie_service.get_spiders_by_movie(
+            db=db,
+            movie_id=movie_id,
+        )
+    except MovieNotFoundError as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(e)
+        )
+
+@router.get("/{movie_id}/costumes", response_model=list[Costume])
+def get_costumes_by_movie(
+    movie_id: int,
+    db: Session = Depends(get_db)
+):
+    try:
+        return movie_service.get_costumes_by_movie(
             db=db,
             movie_id=movie_id,
         )

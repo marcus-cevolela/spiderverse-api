@@ -1,10 +1,12 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from app.schemas.spider import Spider, SpiderCreate, SpiderUpdate
 from app.schemas.movie import Movie
+from app.schemas.costume import Costume
 from app.services import spiders as spider_service
 from app.exceptions.spider import SpiderNotFoundError
 from app.exceptions.movie import MovieNotFoundError
-from app.exceptions.spider_movie import ExistentRelationshipError, NonExistentRelationshipError
+from app.exceptions.costume import CostumeNotFoundError
+from app.exceptions.relationship import ExistentRelationshipError, NonExistentRelationshipError
 from sqlalchemy.orm import Session
 from app.database.connection import get_db
 
@@ -166,6 +168,78 @@ def remove_movie_from_spider(
             detail=str(e)
         )
     except MovieNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+    except NonExistentRelationshipError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(e)
+        )
+
+@router.post("/{spider_id}/costumes/{costume_id}",status_code=status.HTTP_201_CREATED)
+def add_costume_to_spider(
+    spider_id: int,
+    costume_id: int,
+    db: Session = Depends(get_db)
+):
+    try:
+        return spider_service.add_costume_to_spider(
+            db=db,
+            spider_id=spider_id,
+            costume_id=costume_id
+        )
+    except SpiderNotFoundError as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(e)
+        )
+    except CostumeNotFoundError as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(e)
+        )
+    except ExistentRelationshipError as e:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=str(e)
+        )
+
+@router.get("/{spider_id}/costumes", response_model=list[Costume])
+def get_costumes_by_spider(
+    spider_id: int,
+    db: Session = Depends(get_db)
+):
+    try:
+        return spider_service.get_costumes_by_spider(
+            db=db,
+            spider_id=spider_id,
+        )
+    except SpiderNotFoundError as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(e)
+        )
+
+@router.delete("/{spider_id}/costumes/{costume_id}", status_code=status.HTTP_200_OK)
+def remove_costume_from_spider(
+    spider_id: int,
+    costume_id: int,
+    db: Session = Depends(get_db)
+):
+    try:
+        return spider_service.remove_costume_from_spider(
+            db=db,
+            spider_id=spider_id,
+            costume_id=costume_id
+        )
+    except SpiderNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+    except CostumeNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e)

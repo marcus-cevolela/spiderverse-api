@@ -1,8 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-# from app.data.spiders import spiders
-from app.models.spider import Spider as SpiderModel
 from app.models.movie import Movie as MovieModel
+from app.models.costume import Costume as CostumeModel
 from app.models.spider_movie import spider_movie as SpiderMovieModel
 from app.exceptions.movie import MovieNotFoundError
 from app.schemas.movie import MovieCreate, MovieUpdate
@@ -100,6 +99,8 @@ def get_spiders_by_movie(
     db: Session,
     movie_id: int
 ):
+    from app.services.spiders import get_spider_by_id
+    
     get_movie_by_id(db, movie_id)
     
     result = db.execute(select(SpiderMovieModel.c.spider_id).where(SpiderMovieModel.c.movie_id == movie_id))
@@ -108,8 +109,17 @@ def get_spiders_by_movie(
     
     spiders = []
     for spider_id in spider_ids:
-        result_spider = db.execute(select(SpiderModel).where(SpiderModel.id == spider_id))
-        spider = result_spider.scalars().first()
+        spider = get_spider_by_id(db, spider_id)
         spiders.append(spider)
     
     return spiders
+
+def get_costumes_by_movie(
+    db: Session,
+    movie_id: int
+):  
+    get_movie_by_id(db, movie_id)
+    
+    result = db.execute(select(CostumeModel).where(CostumeModel.movie_id == movie_id))
+    
+    return result.scalars().all()
